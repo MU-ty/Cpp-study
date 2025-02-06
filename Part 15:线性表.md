@@ -115,4 +115,313 @@ int main() {
 ## 数组复杂度是O(1)，但整段移位操作（在中间插入删除数据）或搜索指定元素（如果没有排序），时间复杂度是O(n)。
 
 # 二、栈
-## 15.3 洗盘子
+## 15.3 洗盘子1
+如果a比b早加入，a一定比b后退出，                                                                      
+这种数据结构是栈，后进先出LIFO
+## 15.4 洗盘子2
+1、void push(x) 将x压入栈，对应放餐盘
+2、void pop()   弹出栈顶元素，对应取走餐盘
+3、int top()    查询栈顶元素，由此知道接下来该洗哪个餐盘
+
+```cpp
+int stack[MAXN];
+innt p = 0;
+void push(int x) {
+	if (p >= MAXN) {
+		printf("Stack overflow.");
+	}
+	else {
+		stack[p] = x;
+		p += 1;
+	}
+}
+void pop() {
+	if (p == 0)
+		printf("Stack is empty");
+	else
+		p -= 1;
+}
+
+int top() {
+	if (p == 0) {
+		printf("Stack is empty");
+		return -1;
+	}
+	else
+		return stack[p - 1];
+}
+```
+利用上面3个函数可以重新描述洗盘子过程
+```
+push(1);push(2);push(3);
+printf("Wash[%d]\n",top());pop();
+printf("Wash[%d]\n",top());pop();
+push(4);push(5);
+printf("Wash[%d]\n",top());pop();
+printf("Wash[%d]\n",top());pop();
+printf("Wash[%d]\n",top());pop();
+```
+----
+可以使用STL提供的stack容器
+栈的头文件是<stack>，有以下几种方法
+1、stack<int>s    建立一个栈s，其内部元素类型是int
+2、s.push(a)      将元素a压进栈s
+3、s.pop()        将s的栈顶元素弹出
+4、s.top()        查询s的栈顶元素
+5、s.size()       查询s的元素个数
+6、s.empty()      查询s是否为空
+----
+# 15.5平衡的括号 Parentheses Balance
+## 题面翻译
+输入一个包含“()”和“[]”的括号序列，判断是否合法。
+具体规则：
+1. 空串合法；
+2. 如果A和B合法，那么AB合法；
+3. 如果A合法(A)和[A]都合法
+感谢 @陶文祥  提供的翻译。
+## 题目描述
+[problemUrl]: https://uva.onlinejudge.org/index.php?option=com_onlinejudge&Itemid=8&category=8&page=show_problem&problem=614
+[PDF](https://uva.onlinejudge.org/external/6/p673.pdf)
+![](https://cdn.luogu.com.cn/upload/vjudge_pic/UVA673/728efd32dd652b878d710325c5df71cd208a3358.png)
+## 输入格式
+![](https://cdn.luogu.com.cn/upload/vjudge_pic/UVA673/3cc54568c99948acb78df4a79d8f158d490682b2.png)
+## 输出格式
+![](https://cdn.luogu.com.cn/upload/vjudge_pic/UVA673/11abbee807a097f07185a3ad1b6a0383dbcdc0b8.png)
+## 样例 #1
+### 样例输入 #1
+```
+3
+([])
+(([()])))
+([()[]()])()
+```
+### 样例输出 #1
+```
+Yes
+No
+Yes
+```
+
+```cpp
+#include<iostream>
+#include<cstdio>
+#include<stack>
+#include<string>
+using namespace std;
+stack<char>s;
+int num;
+char trans(char a) {
+	if (a == ')')  return '(';
+	if (a == ']')return '[';
+	if (a == '}')  return '{';
+	return '\0';
+}
+int main() {
+	cin >> num;
+	string p;
+	getline(cin, p);
+	while (num--) {
+		while (!s.empty())  
+			s.pop();
+		getline(cin, p);
+		for (int i = 0; i < p.size(); ++i) {
+			if (s.empty()) {
+				s.push(p[i]);
+				continue;
+			}
+			if (trans(p[i]) == s.top())
+				s.pop();
+			else s.push(p[i]);
+		}
+		if (s.empty())   printf("Yes\n");
+		else printf("No\n");
+	}
+	return 0;
+}
+```
+##遇到一个坑点：使用cin读入一个独占的数字后，其读入的指针在这一行的末尾，如果再使用getline读入一行字符串时，只会读到空串（第一行），如果希望读到第二行，必须假装读入这一行，可以使用getline，也可以使用getchar。
+
+# 15.6后缀表达式
+## 题目描述
+所谓后缀表达式是指这样的一个表达式：式中不再引用括号，运算符号放在两个运算对象之后，所有计算按运算符号出现的顺序，严格地由左而右新进行（不用考虑运算符的优先级）。
+本题中运算符仅包含 $\texttt{+-*/}$。保证对于 $\texttt{/}$ 运算除数不为 0。特别地，其中 $\texttt{/}$ 运算的结果需要**向 0 取整**（即与 C++ `/` 运算的规则一致）。
+如：$\texttt{3*(5-2)+7}$ 对应的后缀表达式为：$\texttt{3.5.2.-*7.+@}$。在该式中，`@` 为表达式的结束符号。`.` 为操作数的结束符号。
+## 输入格式
+输入一行一个字符串 $s$，表示后缀表达式。
+## 输出格式
+输出一个整数，表示表达式的值。
+## 样例 #1
+### 样例输入 #1
+```
+3.5.2.-*7.+@
+```
+### 样例输出 #1
+```
+16
+```
+## 样例 #
+### 样例输入 #2
+```
+10.28.30./*7.-@
+```
+### 样例输出 #2
+```
+-7
+```
+## 提示
+数据保证，$1 \leq |s| \leq 50$，答案和计算过程中的每一个值的绝对值不超过 $10^9$。
+
+```cpp
+#include<stack>
+#include<cstdio>
+using namespace std;
+stack<int>n;
+int s = 0, x, y;
+int main() {
+	char ch;
+	do {
+		ch = getchar();
+		if (ch >= '0' && ch <= '9')
+			s = s * 10 + ch - '0';
+		else if (ch == '.')
+			n.push(s), s = 0;
+		else if (ch != '@') {
+			x = n.top();
+			n.pop();
+			y = n.top();
+			n.pop();
+			switch (ch) {
+			case'+':n.push(x + y); break;
+			case'-':n.push(y-x); break;
+			case'*':n.push(x * y); break;
+			case'/':n.push(y/x); break;
+			}
+		}
+	} while (ch != '@');
+	printf("%d\n", n.top());
+	return 0;
+}
+```
+
+# 判断一个程序能否用栈来模拟，看是否满足后进先出或先进后出
+
+## 三、队列
+## 15.7超市排队1
+如果a比b先排入队伍，那么a比b先结账，队列是先进先出的线性表
+## 15.8超市排队2
+1、void push(x)     将x压入队列，一个人排队站在队尾
+2、void pop()       弹出队首的元素，排在最前面的人结完了账，离开队列
+3、int front()      查询队首的元素，这样可以知道现在该谁结账
+```cpp
+int queue[MAXN];
+int head = 0;
+int tail = 0;
+void push(int x) {
+	if (tail >= MAXN)
+		printf("Queue overflow.");
+	else {
+		queue[tail] = x; 
+		taill += 1;
+	}
+}
+
+void pop() {
+	if (head == tail)
+		printf("Queue is empty");
+	else
+		head += 1;
+}
+
+int front() {
+	if (head == tail) {
+		printf("queue is empty");
+		return -1;
+	}
+	else {
+		return queue[head];
+	}
+}
+```
+考虑到如果队列数组的实现和现实中的收银台一样，每次查询数组的第一个元素，退出队列时队列中的所有元素往前移动一格，那么运行效率是非常低的，可以让队伍本身保持静止，而收银员却从前往后移动，每次服务一个人后向后走，就会避免整体移动
+### 栈vs队列
+栈只有一个出入口；队列是后端入，前端出.需要两个指针
+依靠3个函数，使用代码来描述收银的过程
+```cpp
+push(1); push(2); push(3);
+printf("Serve customer:[%d]\n", front()); pop();
+printf("Serve customer:[%d]\n", front()); pop();
+push(4); push(5);
+printf("Serve customer:[%d]\n", front()); pop();
+printf("Serve customer:[%d]\n", front()); pop();
+printf("Serve customer:[%d]\n", front()); pop();
+```
+## 和栈一样，同样可以使用STL来操作，头文件<queue>，有以下几种方法
+1、queue<int>q   建立一个队列q，其内部元素类型是int。
+2、q.push(a)     将元素a插入到队列q的末尾
+3、q.pop()       删除队列q的队首元素
+4、q.front()     查询q的队首元素
+5、q.back()      查询q的队尾元素
+6、q.size()      查询q的元素个数
+7、q.empty()     查询q是否为空
+
+# 15.9约瑟夫问题
+## 题目描述
+$n$ 个人围成一圈，从第一个人开始报数,数到 $m$ 的人出列，再由下一个人重新从 $1$ 开始报数，数到 $m$ 的人再出圈，依次类推，直到所有的人都出圈，请输出依次出圈人的编号。
+**注意：本题和《深入浅出-基础篇》上例题的表述稍有不同。书上表述是给出淘汰 $n-1$ 名小朋友，而该题是全部出圈。**
+## 输入格式
+输入两个整数 $n,m$。
+## 输出格式
+输出一行 $n$ 个整数，按顺序输出每个出圈人的编号。
+## 样例 #1
+### 样例输入 #1
+```
+10 3
+```
+### 样例输出 #1
+```
+3 6 9 2 7 1 8 5 10 4
+```
+## 提示
+$1 \le m, n \le 100$
+
+```cpp
+#include<cstdio>
+#include<queue>
+using namespace std;
+queue<int> q;
+int n, k;
+void work() {
+    // 初始化队列，将所有人的编号 1 到 n 放入队列
+    for (int i = 1; i <= n; i++) {
+        q.push(i);
+    }
+
+    // 当队列中还有多于一个人时，继续操作
+    while (!q.empty()) {
+        // 将队列前 k-1 个元素移动到队列末尾
+        for (int i = 1; i < k; i++) {
+            q.push(q.front());  // 把队列最前面的元素移到队列的末尾
+            q.pop();  // 移除队列最前面的元素
+        }
+
+        // 输出当前队列的第一个元素（即第 k 个出列的人）
+        printf("%d", q.front());
+        q.pop();  // 出列
+
+        // 如果队列不为空，则输出空格（不是最后一个出列的人）
+        if (!q.empty()) {
+            printf(" ");
+        }
+    }
+    printf("\n");
+}
+
+int main() {
+    scanf("%d %d", &n, &k);  // 读取 n 和 k
+    work();  // 调用函数处理
+    return 0;
+}
+```
+## 如果数据有先进先出性质，那么可以考虑使用队列；队列常常使用在各类广度优先搜索算法上
+
+

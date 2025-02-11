@@ -632,7 +632,71 @@ int main() {
     return 0;
 }
 ```
+其实删除操作不是必要的，考虑到最后输出的过程，相当于同学们从左到右报出自己的编号，其实可以不执行删除操作，而是让这些“被删除”的人闭嘴（建立一个shutup数组，数组用于记录学生是否闭嘴），假装他们不存在。
 
+# 15.13 约瑟夫问题
+## 题目描述
+$n$ 个人围成一圈，从第一个人开始报数,数到 $m$ 的人出列，再由下一个人重新从 $1$ 开始报数，数到 $m$ 的人再出圈，依次类推，直到所有的人都出圈，请输出依次出圈人的编号。
+**注意：本题和《深入浅出-基础篇》上例题的表述稍有不同。书上表述是给出淘汰 $n-1$ 名小朋友，而该题是全部出圈。**
+## 输入格式
+输入两个整数 $n,m$。
+## 输出格式
+输出一行 $n$ 个整数，按顺序输出每个出圈人的编号。
+## 输入输出样例 #1
+### 输入 #1
+```
+10 3
+```
+### 输出 #1
+```
+3 6 9 2 7 1 8 5 10 4
+```
+## 说明/提示
+$1 \le m, n \le 100$
 
+除了使用队列，也可以使用链表
+----
+## 使用STL来简化操作，头文件list 
+1、list<int>a;   定义一个int类型链表a
+2、int arr[5]={1,2,3};list<int>a(arr,arr+3);   从数组arr中的前三个元素作为链表a的初始值
+3、a.size()    返回链表结点数量
+4、list<int>::iterator it;    定义一个名为it的迭代器（指针）
+5、a.begin();a.end();         链表开始和末尾的迭代器指针
+6、it++;it--;                 迭代器指向前一个和后一个元素
+7、a.push_front(x);a.push_back(x);   在链表开头或结尾插入元素x
+8、a.insert(it,x)             在迭代器it前面插入元素x
+9、a.pop_front();a.pop_back();  在删除链表开头或者末尾
+10、a.erase(it)               删除迭代器it所在的元素
+11、for(it=a.begin(0;it!=a.end();it++)    遍历链表
+----
 
+```cpp
+#include<iostream>
+#include<list>
+using namespace std;
+list<int>a;
+int main() {
+    int n, m, cnt = 0;
+    cin >> n >> m;
+    for (int i = 1; i <= n; i++) {
+        a.push_back(i);
+    }
+    list<int>::iterator it, now;
+    it = a.begin();
+    while (!a.empty()) {
+        cnt++;
+        now = it;
+        if (++it == a.end())
+            it = a.begin();
+        if (cnt == m) {
+            cout << *now << ' ';
+            a.erase(now);
+            cnt = 0;
+        }
+    }
+    return 0;
+}
+```
+注意：遍历时如果要删除元素，一定要备份出来一个迭代器；否则，it原来指向的结点删除后就不复存在了，导致下一个结点时会访问无效内存。
 
+# END

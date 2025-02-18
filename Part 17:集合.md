@@ -160,3 +160,201 @@ int main() {
 }
 ```
 
+# 二、Hash表
+一个简单问题：给定n个自然数，值域[0,$10^9$]，求出这n个自然数中共有多少个不同的自然数
+取一个模数，定义一个大小为mod的数组，然后把每个数对mod取模，如果两个数取模后相等，则两个数相同。
+```cpp
+#include<iostream>
+#define mod 233333
+using namespace std;
+int n, x, ans, a[mod + 2];
+int main() {
+	cin >> n;
+	for (int i = 1; i <= n; i++) {
+		cin >> x;
+		x %= mod;
+		if (!a[x])
+			a[x] = 1, ans++;
+	}
+	cout << ans << endl;
+	return 0;
+}
+```
+优势：减少了空间的利用，只需定义一个大小为mod的数组；
+劣势：如果有两个不同的数恰好对mod取模之后得到相同的结果，那么算法正确性不能保证，产生冲突
+优化方法：使其既保证正确性，又降低时间和空间复杂度，可以把int的数组改为vector<int>的数组或一个链表，然后将取模后为同一个数的所有值都存在其对应的vector或者链表中。
+然后每次判断一个数x是否存在的时候，遍历x%mod位置的vector或链表中所有元素，看是否含有x即可，改进代码如下：
+```cpp
+#include<iostream>
+#include<vector>
+#define mod 233333
+using namespace std;
+int n, x, ans;
+vector <int>linker[mod + 2];
+inline void insert(int x) {
+	for (int i = 0; i < linker[x % mod].size(); i++)
+		if (linker[x % mod][i] == x)
+			return;
+	linker[x % mod].push_back(x);
+	ans++;
+}
+
+int main() {
+	cin >> n;
+	for (int i = 1; i <= n; i++) {
+		cin >> x;
+		insert(x);
+	}
+	cout << ans << endl;
+	return 0;
+}
+```
+前面讨论的是对数字的处理，而一个字符串该如何当作一个数字？使用ASCII编码，将单个字符映射成一个数字的方式。例如，字符串abAB01就可以映射成[97,98,65,66,48,49]。希望把这串序列映射成0到mod-1中的一个数字，称为字符串的Hash值。转换方式和k进制转换成十进制一样，就是不断进行迭代运算hash=(hash*k+s[i])%mod即可。
+基数k可以任选，但是一般来说不少于128（ASCII字符集的数量）。当然，求Hash值的方法不唯一，例如如果字符集局限于a到z的小写字母，也可以把每个字母映射为0到25，此时基数是26.
+这里的模数mod会取一个比较大的质数以减少可能的冲突，而且在空间足够的时候越大越好。常用的模数有10007、999983等，可以根据实际情况选择。
+由于可能有多个不同的字符串对应同一个Hash值，对每一个Hash值建立一个vector（或链表），用来存储对应于每个Hash值的字符串，这样每次只需将这个插入的字符串和其Has值相同的所有字符串比较，看是否相等，就可以知道这个字符串有没有出现过了。
+
+# 17.3 【模板】字符串哈
+## 题目描述
+如题，给定 $N$ 个字符串（第 $i$ 个字符串长度为 $M_i$，字符串内包含数字、大小写字母，大小写敏感），请求出 $N$ 个字符串中共有多少个不同的字符串。
+**友情提醒：如果真的想好好练习哈希的话，请自觉。**
+## 输入格式
+第一行包含一个整数 $N$，为字符串的个数。
+接下来 $N$ 行每行包含一个字符串，为所提供的字符串。
+## 输出格式
+输出包含一行，包含一个整数，为不同的字符串个数。
+## 输入输出样例 #1
+### 输入 #1
+```
+5
+abc
+aaaa
+abc
+abcc
+12345
+```
+### 输出 #1
+```
+4
+```
+## 说明/提示
+对于 $30\%$ 的数据：$N\leq 10$，$M_i≈6$，$Mmax\leq 15$。
+对于 $70\%$ 的数据：$N\leq 1000$，$M_i≈100$，$Mmax\leq 150$。
+对于 $100\%$ 的数据：$N\leq 10000$，$M_i≈1000$，$Mmax\leq 1500$。
+样例说明：
+样例中第一个字符串(abc)和第三个字符串(abc)是一样的，所以所提供字符串的集合为{aaaa,abc,abcc,12345}，故共计4个不同的字符串。
+Tip：
+感兴趣的话，你们可以先看一看以下三题：
+BZOJ3097：http://www.lydsy.com/JudgeOnline/problem.php?id=3097
+BZOJ3098：http://www.lydsy.com/JudgeOnline/problem.php?id=3098
+BZOJ3099：http://www.lydsy.com/JudgeOnline/problem.php?id=3099
+如果你仔细研究过了（或者至少仔细看过AC人数的话），我想你一定会明白字符串哈希的正确姿势的^\_^
+
+```cpp
+#include<iostream>
+#include<string>
+#include<vector>
+#define MAXN 1510
+#define base 261
+#define mod 23333
+using namespace std;
+int n, ans;
+char s[MAXN];
+vector<string>linker[mod + 2];
+inline void insert() {
+	int hash = 1;
+	for (int i = 0; s[i]; i++) {
+		hash = (hash * 111 * base + s[i]) % mod;
+	}
+	string t = s;
+	for (int i = 0; i < linker[hash].size(); i++)
+		if (linker[hash][i] == t)
+			return;
+	linker[hash].push_back(t);
+	ans++;
+}
+
+int main() {
+	cin >> n;
+	for (int i = 1; i <= n; i++)
+		cin >> s, insert();
+	cout << ans << endl;
+	return 0;
+}
+```
+
+# 17.4 Cities and States S  省市
+## 题目描述
+Farmer John 有若干头奶牛。为了训练奶牛们的智力，Farmer John 在谷仓的墙上放了一张美国地图。地图上表明了每个城市及其所在州的代码（前两位大写字母）。
+由于奶牛在谷仓里花了很多时间看这张地图，他们开始注意到一些奇怪的关系。例如，FLINT 的前两个字母就是 MIAMI 所在的 `FL` 州，MIAMI 的前两个字母则是 FLINT 所在的 `MI` 州。  
+确切地说，对于两个城市，它们的前两个字母互为对方所在州的名称。
+我们称两个城市是一个一对「特殊」的城市，如果他们具有上面的特性，并且来自不同的州。对于总共 $N$ 座城市，奶牛想知道有多少对「特殊」的城市存在。请帮助他们解决这个有趣的地理难题！
+## 输入格式
+输入共 $N + 1$ 行。
+第一行一个正整数 $N$，表示地图上的城市的个数。  
+接下来 $N$ 行，每行两个字符串，分别表示一个城市的名称（$2 \sim 10$ 个大写字母）和所在州的代码（$2$ 个大写字母）。同一个州内不会有两个同名的城市。
+## 输出格式
+输出共一行一个整数，代表特殊的城市对数。
+## 输入输出样例 #1
+### 输入 #1
+```
+6
+MIAMI FL
+DALLAS TX
+FLINT MI
+CLEMSON SC
+BOSTON MA
+ORLANDO FL
+```
+### 输出 #
+```
+1
+```
+## 说明/提示
+### 数据规模与约
+对于 $100\%$ 的数据，$1 \leq N \leq 2 \times 10 ^ 5$，城市名称长度不超过 $10$。
+
+```cpp
+#include<iostream>
+#include<vector>
+#define mod 233333
+using namespace std;
+int n;
+char a[12], b[12];
+long long ans;
+vector<pair<int, int>>linker[mod + 2];
+
+inline int gethash(char a[], char b[]) {
+	return (a[0] - 'A') + (a[1] - 'A') * 26 + (b[0] - 'A') * 26 * 26 + (b[1] - 'A') * 26 * 26 * 26;
+}
+
+inline void insert(int x){
+	for (int i = 0; i < linker[x % mod].size(); i++) {
+		if (linker[x % mod][i].first == x) {
+			linker[x % mod][i].second++;
+			break;
+		}
+	}
+	linker[x % mod].push_back(pair<int, int>(x, 1));
+}
+
+inline int find(int x) {
+	for (int i = 0; i < linker[x % mod].size(); i++)
+		if(linker[x%mod][i].first==x)
+			return linker[x % mod][i].second;
+	return 0;
+}
+
+int main() {
+	cin >> n;
+	for (int i = 1; i <= n; i++) {
+		cin >> a >> b;
+		a[2] = 0;
+		if (a[0] != b[0 ]|| a[1] != b[1])
+			ans += find(gethash(b,a));
+		insert(gethash(a, b));
+	}
+	cout << ans << endl;
+	return 0;
+}
+```

@@ -7,7 +7,7 @@
 每一条边的属性值就是边权，除了边权之外，每个顶点也可以有属性值，称为点权，两个顶点之间如果不只有一条边直接连接，称为重边，甚至可能出现一条边的起点终点是一样的，造成自环。
 在大多数情况下，自环和重边会被简化掉（比如删除自环，同样两个顶点中的多条边只会保留最短的一条）。
 
-##18.2 图的存储
+## 18.2 图的存储
 现希望将第二张图和第三张图存进计算机
 当没有重边的情况下，使用邻接矩阵最为直观。
 可以发现在无向图中右上和左下是对称的，也就是说v[i][j]和v[j][i]是相同的
@@ -82,7 +82,7 @@ int main() {
 ```
 可以发现，对于每条边，只会被插入到一个vector里面，且只插入一次，而总的边数是O(m)的，所以空间复杂度是O(m)，当m比$n^2$小很多时，这里的空间优势就很明显了，但是，如果需要指定查询或修改边<i,j>的边权，因为并不知道这条边的具体存放位置，所以需要通过遍历以i为起点的所有边来找到这条边，需要的时间复杂度为O(n)。在这一点上，邻接表的复杂度不如邻接矩阵O(1)要来的优。
 #二、图的遍历
-# 18.3 查找文献
+## 18.3 查找文献
 ## 题目描述
 小 K 喜欢翻看洛谷博客获取知识。每篇文章可能会有若干个（也有可能没有）参考文献的链接指向别的博客文章。小 K 求知欲旺盛，如果他看了某篇文章，那么他一定会去看这篇文章的参考文献（如果他之前已经看过这篇参考文献的话就不用再看它了）。
 假设洛谷博客里面一共有 $n(n\le10^5)$ 篇文章（编号为 1 到 $n$）以及 $m(m\le10^6)$ 条参考文献引用关系。目前小 K 已经打开了编号为 1 的一篇文章，请帮助小 K 设计一种方法，使小 K 可以不重复、不遗漏的看完所有他能看到的文章。
@@ -183,3 +183,71 @@ int main() {
 }
 ```
 深度优先遍历可以看作在图中的深度优先搜索（DFS），广度优先遍历（BFS）可以看作在图中的广度优先搜索。
+提交答案：
+```cpp
+#include <iostream>
+#include <vector>
+#include <queue>
+#include <algorithm>
+#define MAXN 100005
+using namespace std;
+
+int n, m;
+vector<int> p[MAXN];
+bool u[MAXN];
+
+void dfs(int x) {
+    cout << x << ' ';
+    for (int i = 0, sz = p[x].size(); i < sz; i++) {
+        if (!u[p[x][i]]) {
+            u[p[x][i]] = true;
+            dfs(p[x][i]);
+        }
+    }
+}
+
+void bfs(int start) {
+    queue<int> q;
+    q.push(start);
+    u[start] = true;
+    while (!q.empty()) {
+        int x = q.front();
+        q.pop();
+        cout << x << ' ';
+        for (int i = 0, sz = p[x].size(); i < sz; i++) {
+            if (!u[p[x][i]]) {
+                u[p[x][i]] = true;
+                q.push(p[x][i]);
+            }
+        }
+    }
+}
+
+int main() {
+    cin >> n >> m;
+    for (int i = 1; i <= m; i++) {
+        int x, y;
+        cin >> x >> y;
+        p[x].push_back(y);
+    }
+
+    // 对每个节点的邻接列表进行排序
+    for (int i = 1; i <= n; i++) {
+        sort(p[i].begin(), p[i].end());
+    }
+
+    // DFS遍历
+    fill(u, u + MAXN, false);
+    u[1] = true;
+    dfs(1);
+    cout << endl;
+
+    // BFS遍历
+    fill(u, u + MAXN, false);
+    u[1] = true;
+    bfs(1);
+    cout << endl;
+
+    return 0;
+}
+```
